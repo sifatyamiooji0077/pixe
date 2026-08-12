@@ -6,10 +6,10 @@
     <title>Pixe - On-Device Photo Editor</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; user-select: none; }
-        body { background-color: #0d060a; color: #ffffff; height: 100vh; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; }
+        html, body { height: 100%; height: 100dvh; background-color: #0d060a; color: #ffffff; overflow: hidden; display: flex; flex-direction: column; }
 
         /* SPLASH SCREEN (yamiooji Animation) */
-        .splash-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #0d060a; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; animation: fadeOut 0.8s ease 2.2s forwards; }
+        .splash-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: #0d060a; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; animation: fadeOut 0.8s ease 2.2s forwards; }
         .splash-title { font-size: 38px; font-weight: 900; color: #ff2e93; text-transform: lowercase; letter-spacing: 2px; animation: zoomIn 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); text-shadow: 0 0 20px rgba(255, 46, 147, 0.6); }
         .splash-sub { font-size: 13px; color: #aaa; margin-top: 8px; letter-spacing: 1px; animation: fadeIn 1s ease 0.5s backwards; }
         @keyframes zoomIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
@@ -17,16 +17,16 @@
         @keyframes fadeOut { 0% { opacity: 1; visibility: visible; } 100% { opacity: 0; visibility: hidden; } }
 
         /* TOP BAR */
-        .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: #140810; border-bottom: 1px solid #2a1020; z-index: 100; min-height: 55px; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: #140810; border-bottom: 1px solid #2a1020; z-index: 100; min-height: 55px; flex-shrink: 0; }
         .app-brand { font-size: 22px; font-weight: 800; color: #ff2e93; font-style: italic; letter-spacing: 1px; }
         .nav-left { display: flex; align-items: center; gap: 8px; }
         .back-btn { background: #2a1020; color: #ff2e93; border: 1px solid #ff2e93; padding: 5px 12px; border-radius: 12px; font-size: 12px; font-weight: 700; cursor: pointer; display: none; }
         .nav-right { display: flex; gap: 10px; align-items: center; }
         .btn-text { background: none; border: none; color: #ff2e93; font-size: 13px; font-weight: 700; cursor: pointer; }
-        .btn-primary { background: #ff2e93; color: #fff; font-weight: 700; font-size: 13px; padding: 6px 16px; border-radius: 20px; border: none; cursor: pointer; }
+        .btn-primary { background: #ff2e93; color: #fff; font-weight: 700; font-size: 13px; padding: 10px 16px; border-radius: 20px; border: none; cursor: pointer; }
 
         /* VIEWS / SCREENS */
-        .view-screen { display: none; flex: 1; flex-direction: column; justify-content: space-between; padding: 14px; overflow-y: auto; }
+        .view-screen { display: none; flex: 1; flex-direction: column; justify-content: space-between; padding: 14px; overflow-y: auto; height: calc(100dvh - 55px); }
         .view-screen.active { display: flex; }
 
         /* HOME LAYOUT */
@@ -43,23 +43,27 @@
         .decision-sub { font-size: 12px; color: #aaa; margin-bottom: 20px; }
         .decision-btn-group { display: flex; gap: 12px; justify-content: center; }
 
-        /* CANVA / PREVIEW AREA */
-        .preview-container { flex: 1; display: flex; justify-content: center; align-items: center; position: relative; background: #000; border-radius: 16px; overflow: hidden; min-height: 280px; margin-bottom: 10px; }
+        /* LMC CONFIG LIST WITH SCROLLBAR & ELLIPSIS */
+        .config-list { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; max-height: 220px; overflow-y: auto; padding-right: 4px; }
+        .config-item { background: #1a0a15; border: 1px solid #33142a; padding: 12px 14px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; gap: 8px; }
+        .config-item span:first-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 85%; font-size: 12px; }
+        .config-item.selected { border-color: #ff2e93; background: rgba(255, 46, 147, 0.1); }
+        .xml-btn { background: rgba(255, 46, 147, 0.15); border: 1px dashed #ff2e93; color: #fff; padding: 12px; border-radius: 12px; text-align: center; font-size: 13px; cursor: pointer; margin-bottom: 8px; font-weight: 700; }
+
+        /* FIXED FOOTER BUTTON */
+        .action-footer { margin-top: auto; padding-top: 10px; flex-shrink: 0; width: 100%; }
+
+        /* PREVIEW AREA */
+        .preview-container { flex: 1; display: flex; justify-content: center; align-items: center; position: relative; background: #000; border-radius: 16px; overflow: hidden; min-height: 250px; margin-bottom: 10px; }
         canvas { max-width: 100%; max-height: 100%; object-fit: contain; }
         .hold-btn { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); border: 1px solid #ff2e93; color: #fff; padding: 5px 12px; border-radius: 15px; font-size: 11px; z-index: 10; cursor: pointer; }
 
-        /* LMC CONFIG LIST */
-        .config-list { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
-        .config-item { background: #1a0a15; border: 1px solid #33142a; padding: 12px 16px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
-        .config-item.selected { border-color: #ff2e93; background: rgba(255, 46, 147, 0.1); }
-        .xml-btn { background: rgba(255, 46, 147, 0.15); border: 1px dashed #ff2e93; color: #fff; padding: 12px; border-radius: 12px; text-align: center; font-size: 13px; cursor: pointer; margin-bottom: 10px; font-weight: 700; }
-
         /* LOADER */
-        .loader-box { display: none; text-align: center; padding: 30px 10px; }
-        .spinner { width: 40px; height: 40px; border: 4px solid rgba(255,46,147,0.2); border-top-color: #ff2e93; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 15px; }
+        .loader-box { display: none; text-align: center; padding: 20px 10px; }
+        .spinner { width: 35px; height: 35px; border: 4px solid rgba(255,46,147,0.2); border-top-color: #ff2e93; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 10px; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        /* MANUAL EDITOR CONTROLS & SUB TABS */
+        /* MANUAL EDITOR CONTROLS */
         .editor-panel { background: #140810; border-radius: 18px; padding: 12px; }
         .sub-tabs { display: flex; overflow-x: auto; gap: 8px; border-bottom: 1px solid #2a1020; padding-bottom: 8px; margin-bottom: 12px; }
         .sub-tab-btn { background: #1a0a15; border: 1px solid #33142a; color: #888; padding: 6px 12px; border-radius: 15px; font-size: 11px; white-space: nowrap; font-weight: 700; cursor: pointer; }
@@ -79,7 +83,7 @@
         .lang-warning { color: #ff2e93; font-size: 11px; margin-top: 5px; display: none; }
 
         /* EXPORT MODAL */
-        .modal-overlay { position: fixed; top:0; left:0; width:100vw; height:100vh; background: rgba(0,0,0,0.85); display:none; justify-content:center; align-items:center; z-index:9999; }
+        .modal-overlay { position: fixed; top:0; left:0; width:100vw; height:100dvh; background: rgba(0,0,0,0.85); display:none; justify-content:center; align-items:center; z-index:9999; }
         .modal-body { background: #1a0a15; border: 1px solid #ff2e93; border-radius: 18px; padding: 20px; width: 85%; max-width: 320px; text-align: center; }
         .modal-body img { max-width: 100%; max-height: 220px; border-radius: 10px; margin: 12px 0; }
     </style>
@@ -98,9 +102,7 @@
             <button class="back-btn" id="globalBackBtn" onclick="popHistory()">‹ Back</button>
             <span class="app-brand">Pixe</span>
         </div>
-        <div class="nav-right" id="topNavActions">
-            <!-- Dynamic Buttons -->
-        </div>
+        <div class="nav-right" id="topNavActions"></div>
     </div>
 
     <!-- HIDDEN INPUTS -->
@@ -141,7 +143,7 @@
             <h3 style="font-size:16px; color:#ff2e93;">Select Your Config File</h3>
             <p style="font-size:11px; color:#aaa; margin-top:2px;">Add or choose an LMC config to auto edit.</p>
             
-            <div style="margin-top:15px;">
+            <div style="margin-top:12px;">
                 <div class="xml-btn" onclick="document.getElementById('xmlInput').click()">+ Add Custom XML File</div>
                 <div class="config-list" id="configContainer">
                     <div class="config-item selected" onclick="selectConfig(this, 'leica')">
@@ -167,7 +169,9 @@
             <p style="font-size:13px; color:#fff;">LMC Editing Complete!</p>
         </div>
 
-        <button class="btn-primary" id="lmcNextBtn" style="width:100%; padding:12px;" onclick="processLMC()">Next</button>
+        <div class="action-footer">
+            <button class="btn-primary" id="lmcNextBtn" style="width:100%; padding:12px;" onclick="processLMC()">Next</button>
+        </div>
     </div>
 
     <!-- STEP 4: MANUAL DECISION -->
@@ -197,7 +201,6 @@
                 <button class="sub-tab-btn" onclick="switchSubTab('tab-exhaust', this)">Photo Exhaust</button>
             </div>
 
-            <!-- 1. FACE EDIT -->
             <div class="tab-content active" id="tab-face">
                 <div class="slider-group">
                     <div class="slider-label"><span>Eye Size</span><span id="v-eye">100%</span></div>
@@ -213,7 +216,6 @@
                 </div>
             </div>
 
-            <!-- 2. BODY EDIT -->
             <div class="tab-content" id="tab-body">
                 <div class="slider-group">
                     <div class="slider-label"><span>Waist Slim</span><span id="v-waist">0%</span></div>
@@ -225,7 +227,6 @@
                 </div>
             </div>
 
-            <!-- 3. PHOTO COLOURS EDIT -->
             <div class="tab-content" id="tab-color">
                 <div class="slider-group">
                     <div class="slider-label"><span>Brightness</span><span id="v-b">100%</span></div>
@@ -243,23 +244,12 @@
                     <div class="slider-label"><span>Hue / Warmth</span><span id="v-h">0°</span></div>
                     <input type="range" min="-90" max="90" value="0" oninput="updateManual('hue', this.value, 'v-h')">
                 </div>
-                <div class="slider-group">
-                    <div class="slider-label"><span>Details & Focus</span><span id="v-d">0%</span></div>
-                    <input type="range" min="0" max="100" value="0" oninput="updateManual('details', this.value, 'v-d')">
-                </div>
             </div>
 
-            <!-- 4. PHOTO EXHAUST -->
             <div class="tab-content" id="tab-exhaust">
                 <div style="display:flex; gap:8px; margin-bottom:10px;">
                     <button class="btn-text" style="background:#2a1020; border:1px solid #ff2e93; padding:6px; border-radius:10px; flex:1;" onclick="applyBgColor('#ff2e93')">Solid BG Color</button>
                     <button class="btn-text" style="background:#2a1020; border:1px solid #ff2e93; padding:6px; border-radius:10px; flex:1;" onclick="applyBgTransparent()">Without BG (Sticker)</button>
-                </div>
-                <div style="background:#1a0a15; padding:8px; border-radius:10px; border:1px solid #33142a; text-align:center;">
-                    <span style="font-size:11px; color:#aaa;">Super Remover (Touch canvas to erase objects)</span>
-                    <div class="slider-group" style="margin-top:6px;">
-                        <input type="range" min="5" max="50" value="20" id="eraserRadius">
-                    </div>
                 </div>
             </div>
         </div>
@@ -296,19 +286,13 @@
     </div>
 
     <script>
-        // APP STATE & HISTORY
         let rawImage = new Image();
         let currentScreen = 'screen-upload';
         let screenHistory = [];
         let selectedConfig = 'leica';
 
-        let params = {
-            eyeSize: 100, eyeOpen: 100, faceSlim: 0,
-            waist: 0, height: 100,
-            brightness: 100, contrast: 100, saturation: 100, hue: 0, details: 0
-        };
+        let params = { eyeSize: 100, eyeOpen: 100, faceSlim: 0, waist: 0, height: 100, brightness: 100, contrast: 100, saturation: 100, hue: 0 };
 
-        // HIDE SPLASH AFTER ANIMATION
         setTimeout(() => {
             const splash = document.getElementById('splashScreen');
             if (splash) splash.style.display = 'none';
@@ -320,11 +304,8 @@
             input.click();
         }
 
-        // NAVIGATION LOGIC
         function goToStep(screenId) {
-            if (currentScreen !== screenId) {
-                screenHistory.push(currentScreen);
-            }
+            if (currentScreen !== screenId) screenHistory.push(currentScreen);
             currentScreen = screenId;
             renderScreen();
         }
@@ -359,24 +340,18 @@
             }
         }
 
-        // FIXED RELIABLE IMAGE UPLOAD HANDLER
         function handleImageUpload(e) {
             const files = e.target.files;
             if (!files || files.length === 0) return;
-            const file = files[0];
-
             const reader = new FileReader();
             reader.onload = function(evt) {
                 rawImage = new Image();
-                rawImage.onload = function() {
-                    goToStep('screen-lmc-decision');
-                };
+                rawImage.onload = function() { goToStep('screen-lmc-decision'); };
                 rawImage.src = evt.target.result;
             };
-            reader.readAsDataURL(file);
+            reader.readAsDataURL(files[0]);
         }
 
-        // LMC FUNCTIONS
         function selectConfig(el, type) {
             document.querySelectorAll('.config-item').forEach(c => {
                 c.classList.remove('selected');
@@ -413,13 +388,10 @@
                 document.getElementById('lmcLoader').style.display = 'none';
                 document.getElementById('lmcDoneBox').style.display = 'block';
                 
-                setTimeout(() => {
-                    goToStep('screen-manual-decision');
-                }, 1000);
+                setTimeout(() => { goToStep('screen-manual-decision'); }, 1000);
             }, 1200);
         }
 
-        // MANUAL EDIT SUB TABS
         function switchSubTab(tabId, btn) {
             document.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
@@ -433,21 +405,17 @@
             renderCanvas('manualCanvas');
         }
 
-        // CANVAS RENDERING ENGINE
         function renderCanvas(canvasId) {
             const canvas = document.getElementById(canvasId);
             if (!canvas || !rawImage.src) return;
             const ctx = canvas.getContext('2d');
-
             canvas.width = rawImage.width || 800;
             canvas.height = (rawImage.height || 800) * (params.height / 100);
-
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.filter = `brightness(${params.brightness}%) contrast(${params.contrast}%) saturate(${params.saturation}%) hue-rotate(${params.hue}deg)`;
             ctx.drawImage(rawImage, 0, 0, canvas.width, canvas.height);
         }
 
-        // HOLD FOR ORIGINAL
         function showOriginal() {
             const canvas = document.querySelector('.view-screen.active canvas');
             if (canvas && rawImage.src) {
@@ -462,7 +430,6 @@
             if (activeCanvas) renderCanvas(activeCanvas.id);
         }
 
-        // EXHAUST (BG REMOVE & TRANSPARENT)
         function applyBgColor(color) {
             const canvas = document.getElementById('manualCanvas');
             const ctx = canvas.getContext('2d');
@@ -471,11 +438,8 @@
             ctx.drawImage(rawImage, 0, 0, canvas.width, canvas.height);
         }
 
-        function applyBgTransparent() {
-            alert('Background Removed! Saved as Transparent Sticker.');
-        }
+        function applyBgTransparent() { alert('Background Removed! Saved as Transparent Sticker.'); }
 
-        // STRICT ENGLISH AI VALIDATION
         function validateEnglishPrompt(textarea) {
             const warning = document.getElementById('langAlert');
             const englishRegex = /^[a-zA-Z0-9\s.,!?'"-]*$/;
@@ -490,15 +454,11 @@
         function runAiEngine() {
             const prompt = document.getElementById('aiPrompt').value;
             if (!prompt) return alert('Please write an English prompt first!');
-            
-            params.brightness = 110;
-            params.contrast = 125;
-            params.saturation = 120;
+            params.brightness = 110; params.contrast = 125; params.saturation = 120;
             renderCanvas('aiCanvas');
             alert('AI Magic Applied Successfully!');
         }
 
-        // EXPORT MODAL
         function openExportModal(canvasId) {
             const canvas = document.getElementById(canvasId);
             const dataUrl = canvas.toDataURL('image/png');
@@ -507,9 +467,7 @@
             document.getElementById('exportModal').style.display = 'flex';
         }
 
-        function closeModal() {
-            document.getElementById('exportModal').style.display = 'none';
-        }
+        function closeModal() { document.getElementById('exportModal').style.display = 'none'; }
     </script>
 </body>
 </html>
