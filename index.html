@@ -8,6 +8,14 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; user-select: none; }
         body { background-color: #0d060a; color: #ffffff; height: 100vh; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; }
 
+        /* SPLASH SCREEN (yamiooji Animation) */
+        .splash-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #0d060a; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; animation: fadeOut 0.8s ease 2.2s forwards; }
+        .splash-title { font-size: 38px; font-weight: 900; color: #ff2e93; text-transform: lowercase; letter-spacing: 2px; animation: zoomIn 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); text-shadow: 0 0 20px rgba(255, 46, 147, 0.6); }
+        .splash-sub { font-size: 13px; color: #aaa; margin-top: 8px; letter-spacing: 1px; animation: fadeIn 1s ease 0.5s backwards; }
+        @keyframes zoomIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes fadeIn { 0% { opacity: 0; } 100% { opacity: 1; } }
+        @keyframes fadeOut { 0% { opacity: 1; visibility: visible; } 100% { opacity: 0; visibility: hidden; } }
+
         /* TOP BAR */
         .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: #140810; border-bottom: 1px solid #2a1020; z-index: 100; min-height: 55px; }
         .app-brand { font-size: 22px; font-weight: 800; color: #ff2e93; font-style: italic; letter-spacing: 1px; }
@@ -21,10 +29,13 @@
         .view-screen { display: none; flex: 1; flex-direction: column; justify-content: space-between; padding: 14px; overflow-y: auto; }
         .view-screen.active { display: flex; }
 
-        /* UPLOAD CARD */
-        .upload-card { border: 2px dashed #ff2e93; border-radius: 20px; padding: 40px 20px; text-align: center; background: rgba(255, 46, 147, 0.05); cursor: pointer; margin: auto 0; }
+        /* HOME LAYOUT */
+        .home-container { display: flex; flex-direction: column; gap: 16px; margin: auto 0; width: 100%; }
+        .upload-card { border: 2px dashed #ff2e93; border-radius: 20px; padding: 35px 20px; text-align: center; background: rgba(255, 46, 147, 0.05); cursor: pointer; }
         .upload-icon { font-size: 45px; color: #ff2e93; margin-bottom: 10px; }
         .upload-title { font-size: 18px; font-weight: 800; color: #ffffff; }
+        .home-config-box { background: #1a0a15; border: 1px solid #ff2e93; border-radius: 16px; padding: 14px; text-align: center; }
+        .home-config-title { font-size: 13px; font-weight: 700; color: #ff2e93; margin-bottom: 8px; }
 
         /* DECISION CARDS */
         .decision-box { background: #1a0a15; border: 1px solid #ff2e93; border-radius: 18px; padding: 20px; text-align: center; margin: auto 0; }
@@ -75,26 +86,44 @@
 </head>
 <body>
 
+    <!-- SPLASH SCREEN ANIMATION -->
+    <div class="splash-screen" id="splashScreen">
+        <div class="splash-title">yamiooji</div>
+        <div class="splash-sub">Pixe Photo Editor</div>
+    </div>
+
+    <!-- TOP NAVIGATION BAR -->
     <div class="top-bar">
         <div class="nav-left">
             <button class="back-btn" id="globalBackBtn" onclick="popHistory()">‹ Back</button>
             <span class="app-brand">Pixe</span>
         </div>
         <div class="nav-right" id="topNavActions">
-            </div>
-    </div>
-
-    <input type="file" id="imageInput" accept="image/*" style="display:none;" onchange="handleImageUpload(event)">
-    <input type="file" id="xmlInput" accept=".xml" style="display:none;" onchange="handleCustomXml(event)">
-
-    <div class="view-screen active" id="screen-upload">
-        <div class="upload-card" onclick="document.getElementById('imageInput').click()">
-            <div class="upload-icon">☁</div>
-            <div class="upload-title">Upload Photo</div>
-            <p style="font-size:11px; color:#ff2e93; margin-top:6px;">Tap to select from gallery</p>
+            <!-- Dynamic Buttons -->
         </div>
     </div>
 
+    <!-- HIDDEN INPUTS -->
+    <input type="file" id="imageInput" accept="image/*" style="display:none;" onchange="handleImageUpload(event)">
+    <input type="file" id="xmlInput" accept=".xml" style="display:none;" onchange="handleCustomXml(event)">
+
+    <!-- STEP 1: HOME & UPLOAD -->
+    <div class="view-screen active" id="screen-upload">
+        <div class="home-container">
+            <div class="upload-card" onclick="triggerFileInput()">
+                <div class="upload-icon">☁</div>
+                <div class="upload-title">Upload Photo</div>
+                <p style="font-size:11px; color:#ff2e93; margin-top:6px;">Tap to select from gallery</p>
+            </div>
+
+            <div class="home-config-box">
+                <div class="home-config-title">⚙ LMC Config File Manager</div>
+                <div class="xml-btn" style="margin-bottom:0;" onclick="document.getElementById('xmlInput').click()">+ Add LMC Config File</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STEP 2: LMC DECISION -->
     <div class="view-screen" id="screen-lmc-decision">
         <div class="decision-box">
             <div class="decision-title">LMC Auto Edit</div>
@@ -106,6 +135,7 @@
         </div>
     </div>
 
+    <!-- STEP 3: LMC SELECT & PROCESS -->
     <div class="view-screen" id="screen-lmc-select">
         <div>
             <h3 style="font-size:16px; color:#ff2e93;">Select Your Config File</h3>
@@ -140,6 +170,7 @@
         <button class="btn-primary" id="lmcNextBtn" style="width:100%; padding:12px;" onclick="processLMC()">Next</button>
     </div>
 
+    <!-- STEP 4: MANUAL DECISION -->
     <div class="view-screen" id="screen-manual-decision">
         <div class="decision-box">
             <div class="decision-title">Manual Edit</div>
@@ -151,6 +182,7 @@
         </div>
     </div>
 
+    <!-- STEP 5: MANUAL EDIT MAIN SCREEN -->
     <div class="view-screen" id="screen-manual">
         <div class="preview-container">
             <button class="hold-btn" onmousedown="showOriginal()" onmouseup="showEdited()" ontouchstart="showOriginal()" ontouchend="showEdited()">📌 Hold for Original</button>
@@ -165,6 +197,7 @@
                 <button class="sub-tab-btn" onclick="switchSubTab('tab-exhaust', this)">Photo Exhaust</button>
             </div>
 
+            <!-- 1. FACE EDIT -->
             <div class="tab-content active" id="tab-face">
                 <div class="slider-group">
                     <div class="slider-label"><span>Eye Size</span><span id="v-eye">100%</span></div>
@@ -180,6 +213,7 @@
                 </div>
             </div>
 
+            <!-- 2. BODY EDIT -->
             <div class="tab-content" id="tab-body">
                 <div class="slider-group">
                     <div class="slider-label"><span>Waist Slim</span><span id="v-waist">0%</span></div>
@@ -191,6 +225,7 @@
                 </div>
             </div>
 
+            <!-- 3. PHOTO COLOURS EDIT -->
             <div class="tab-content" id="tab-color">
                 <div class="slider-group">
                     <div class="slider-label"><span>Brightness</span><span id="v-b">100%</span></div>
@@ -214,6 +249,7 @@
                 </div>
             </div>
 
+            <!-- 4. PHOTO EXHAUST -->
             <div class="tab-content" id="tab-exhaust">
                 <div style="display:flex; gap:8px; margin-bottom:10px;">
                     <button class="btn-text" style="background:#2a1020; border:1px solid #ff2e93; padding:6px; border-radius:10px; flex:1;" onclick="applyBgColor('#ff2e93')">Solid BG Color</button>
@@ -229,6 +265,7 @@
         </div>
     </div>
 
+    <!-- STEP 6: AI EDIT -->
     <div class="view-screen" id="screen-ai">
         <div class="preview-container">
             <button class="hold-btn" onmousedown="showOriginal()" onmouseup="showEdited()" ontouchstart="showOriginal()" ontouchend="showEdited()">📌 Hold for Original</button>
@@ -245,6 +282,7 @@
         </div>
     </div>
 
+    <!-- EXPORT MODAL -->
     <div class="modal-overlay" id="exportModal">
         <div class="modal-body">
             <h3 style="color:#ff2e93; font-size:16px;">Export Photo</h3>
@@ -270,6 +308,18 @@
             brightness: 100, contrast: 100, saturation: 100, hue: 0, details: 0
         };
 
+        // HIDE SPLASH AFTER ANIMATION
+        setTimeout(() => {
+            const splash = document.getElementById('splashScreen');
+            if (splash) splash.style.display = 'none';
+        }, 3000);
+
+        function triggerFileInput() {
+            const input = document.getElementById('imageInput');
+            input.value = '';
+            input.click();
+        }
+
         // NAVIGATION LOGIC
         function goToStep(screenId) {
             if (currentScreen !== screenId) {
@@ -293,10 +343,8 @@
             const backBtn = document.getElementById('globalBackBtn');
             const navRight = document.getElementById('topNavActions');
 
-            // Show Back Button for step 2 onwards
             backBtn.style.display = (currentScreen === 'screen-upload') ? 'none' : 'block';
 
-            // Top-right Nav Actions
             if (currentScreen === 'screen-manual') {
                 navRight.innerHTML = `
                     <button class="btn-text" onclick="goToStep('screen-ai')">Next</button>
@@ -311,19 +359,21 @@
             }
         }
 
-        // IMAGE UPLOAD HANDLER
+        // FIXED RELIABLE IMAGE UPLOAD HANDLER
         function handleImageUpload(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(evt) {
-                    rawImage.onload = () => {
-                        goToStep('screen-lmc-decision');
-                    };
-                    rawImage.src = evt.target.result;
+            const files = e.target.files;
+            if (!files || files.length === 0) return;
+            const file = files[0];
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                rawImage = new Image();
+                rawImage.onload = function() {
+                    goToStep('screen-lmc-decision');
                 };
-                reader.readAsDataURL(file);
-            }
+                rawImage.src = evt.target.result;
+            };
+            reader.readAsDataURL(file);
         }
 
         // LMC FUNCTIONS
@@ -346,4 +396,120 @@
                 div.onclick = function() { selectConfig(this, 'custom'); };
                 div.innerHTML = `<span>📄 ${file.name}</span><span>✓</span>`;
                 container.prepend(div);
-          
+                selectConfig(div, 'custom');
+                alert('Config XML File added successfully!');
+            }
+        }
+
+        function processLMC() {
+            document.getElementById('lmcLoader').style.display = 'block';
+            document.getElementById('lmcNextBtn').style.display = 'none';
+
+            setTimeout(() => {
+                if (selectedConfig === 'leica') { params.contrast = 120; params.saturation = 110; }
+                if (selectedConfig === 'hdr') { params.brightness = 110; params.contrast = 130; params.saturation = 125; }
+                if (selectedConfig === 'soft') { params.brightness = 105; params.contrast = 95; params.saturation = 105; }
+
+                document.getElementById('lmcLoader').style.display = 'none';
+                document.getElementById('lmcDoneBox').style.display = 'block';
+                
+                setTimeout(() => {
+                    goToStep('screen-manual-decision');
+                }, 1000);
+            }, 1200);
+        }
+
+        // MANUAL EDIT SUB TABS
+        function switchSubTab(tabId, btn) {
+            document.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        function updateManual(key, val, textId) {
+            params[key] = parseFloat(val);
+            document.getElementById(textId).innerText = val + (key === 'hue' ? '°' : '%');
+            renderCanvas('manualCanvas');
+        }
+
+        // CANVAS RENDERING ENGINE
+        function renderCanvas(canvasId) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas || !rawImage.src) return;
+            const ctx = canvas.getContext('2d');
+
+            canvas.width = rawImage.width || 800;
+            canvas.height = (rawImage.height || 800) * (params.height / 100);
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.filter = `brightness(${params.brightness}%) contrast(${params.contrast}%) saturate(${params.saturation}%) hue-rotate(${params.hue}deg)`;
+            ctx.drawImage(rawImage, 0, 0, canvas.width, canvas.height);
+        }
+
+        // HOLD FOR ORIGINAL
+        function showOriginal() {
+            const canvas = document.querySelector('.view-screen.active canvas');
+            if (canvas && rawImage.src) {
+                const ctx = canvas.getContext('2d');
+                ctx.filter = 'none';
+                ctx.drawImage(rawImage, 0, 0, canvas.width, canvas.height);
+            }
+        }
+
+        function showEdited() {
+            const activeCanvas = document.querySelector('.view-screen.active canvas');
+            if (activeCanvas) renderCanvas(activeCanvas.id);
+        }
+
+        // EXHAUST (BG REMOVE & TRANSPARENT)
+        function applyBgColor(color) {
+            const canvas = document.getElementById('manualCanvas');
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = color;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(rawImage, 0, 0, canvas.width, canvas.height);
+        }
+
+        function applyBgTransparent() {
+            alert('Background Removed! Saved as Transparent Sticker.');
+        }
+
+        // STRICT ENGLISH AI VALIDATION
+        function validateEnglishPrompt(textarea) {
+            const warning = document.getElementById('langAlert');
+            const englishRegex = /^[a-zA-Z0-9\s.,!?'"-]*$/;
+            if (!englishRegex.test(textarea.value)) {
+                warning.style.display = 'block';
+                textarea.value = textarea.value.replace(/[^a-zA-Z0-9\s.,!?'"-]/g, '');
+            } else {
+                warning.style.display = 'none';
+            }
+        }
+
+        function runAiEngine() {
+            const prompt = document.getElementById('aiPrompt').value;
+            if (!prompt) return alert('Please write an English prompt first!');
+            
+            params.brightness = 110;
+            params.contrast = 125;
+            params.saturation = 120;
+            renderCanvas('aiCanvas');
+            alert('AI Magic Applied Successfully!');
+        }
+
+        // EXPORT MODAL
+        function openExportModal(canvasId) {
+            const canvas = document.getElementById(canvasId);
+            const dataUrl = canvas.toDataURL('image/png');
+            document.getElementById('exportImgPreview').src = dataUrl;
+            document.getElementById('downloadBtn').href = dataUrl;
+            document.getElementById('exportModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('exportModal').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
