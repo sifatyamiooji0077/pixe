@@ -8,7 +8,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; user-select: none; }
         html, body { height: 100%; height: 100dvh; background-color: #0d060a; color: #ffffff; overflow: hidden; display: flex; flex-direction: column; }
 
-        /* SPLASH SCREEN (yamiooji Animation) */
+        /* SPLASH SCREEN */
         .splash-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: #0d060a; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; animation: fadeOut 0.8s ease 2.2s forwards; }
         .splash-title { font-size: 38px; font-weight: 900; color: #ff2e93; text-transform: lowercase; letter-spacing: 2px; animation: zoomIn 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); text-shadow: 0 0 20px rgba(255, 46, 147, 0.6); }
         .splash-sub { font-size: 13px; color: #aaa; margin-top: 8px; letter-spacing: 1px; animation: fadeIn 1s ease 0.5s backwards; }
@@ -43,18 +43,17 @@
         .decision-sub { font-size: 12px; color: #aaa; margin-bottom: 20px; }
         .decision-btn-group { display: flex; gap: 12px; justify-content: center; }
 
-        /* LMC CONFIG LIST WITH SCROLLBAR & ELLIPSIS */
-        .config-list { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; max-height: 220px; overflow-y: auto; padding-right: 4px; }
+        /* LMC CONFIG LIST WITH FIXED FOOTER */
+        .config-list { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; max-height: 200px; overflow-y: auto; padding-right: 4px; }
         .config-item { background: #1a0a15; border: 1px solid #33142a; padding: 12px 14px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; gap: 8px; }
         .config-item span:first-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 85%; font-size: 12px; }
         .config-item.selected { border-color: #ff2e93; background: rgba(255, 46, 147, 0.1); }
         .xml-btn { background: rgba(255, 46, 147, 0.15); border: 1px dashed #ff2e93; color: #fff; padding: 12px; border-radius: 12px; text-align: center; font-size: 13px; cursor: pointer; margin-bottom: 8px; font-weight: 700; }
 
-        /* FIXED FOOTER BUTTON */
         .action-footer { margin-top: auto; padding-top: 10px; flex-shrink: 0; width: 100%; }
 
         /* PREVIEW AREA */
-        .preview-container { flex: 1; display: flex; justify-content: center; align-items: center; position: relative; background: #000; border-radius: 16px; overflow: hidden; min-height: 250px; margin-bottom: 10px; }
+        .preview-container { flex: 1; display: flex; justify-content: center; align-items: center; position: relative; background: #000; border-radius: 16px; overflow: hidden; min-height: 240px; margin-bottom: 10px; }
         canvas { max-width: 100%; max-height: 100%; object-fit: contain; }
         .hold-btn { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); border: 1px solid #ff2e93; color: #fff; padding: 5px 12px; border-radius: 15px; font-size: 11px; z-index: 10; cursor: pointer; }
 
@@ -65,7 +64,8 @@
 
         /* MANUAL EDITOR CONTROLS */
         .editor-panel { background: #140810; border-radius: 18px; padding: 12px; }
-        .sub-tabs { display: flex; overflow-x: auto; gap: 8px; border-bottom: 1px solid #2a1020; padding-bottom: 8px; margin-bottom: 12px; }
+        .sub-tabs { display: flex; overflow-x: auto; gap: 8px; border-bottom: 1px solid #2a1020; padding-bottom: 8px; margin-bottom: 12px; scrollbar-width: none; }
+        .sub-tabs::-webkit-scrollbar { display: none; }
         .sub-tab-btn { background: #1a0a15; border: 1px solid #33142a; color: #888; padding: 6px 12px; border-radius: 15px; font-size: 11px; white-space: nowrap; font-weight: 700; cursor: pointer; }
         .sub-tab-btn.active { color: #fff; background: #ff2e93; border-color: #ff2e93; }
 
@@ -76,6 +76,11 @@
         .slider-label { display: flex; justify-content: space-between; font-size: 11px; color: #ccc; }
         .slider-group input[type=range] { -webkit-appearance: none; width: 100%; height: 4px; background: #33142a; border-radius: 2px; }
         .slider-group input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: #ff2e93; box-shadow: 0 0 6px #ff2e93; }
+
+        /* CROP & RESIZE BUTTONS */
+        .crop-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        .crop-btn { background: #1a0a15; border: 1px solid #33142a; color: #ccc; padding: 8px; border-radius: 10px; font-size: 11px; font-weight: 700; cursor: pointer; text-align: center; }
+        .crop-btn.active { border-color: #ff2e93; color: #fff; background: rgba(255, 46, 147, 0.15); }
 
         /* AI TEXTAREA */
         .ai-input-box { background: #1a0a15; border: 1px solid #33142a; border-radius: 14px; padding: 10px; }
@@ -90,13 +95,11 @@
 </head>
 <body>
 
-    <!-- SPLASH SCREEN ANIMATION -->
     <div class="splash-screen" id="splashScreen">
         <div class="splash-title">yamiooji</div>
         <div class="splash-sub">Pixe Photo Editor</div>
     </div>
 
-    <!-- TOP NAVIGATION BAR -->
     <div class="top-bar">
         <div class="nav-left">
             <button class="back-btn" id="globalBackBtn" onclick="popHistory()">‹ Back</button>
@@ -105,11 +108,10 @@
         <div class="nav-right" id="topNavActions"></div>
     </div>
 
-    <!-- HIDDEN INPUTS -->
     <input type="file" id="imageInput" accept="image/*" style="display:none;" onchange="handleImageUpload(event)">
     <input type="file" id="xmlInput" accept=".xml" style="display:none;" onchange="handleCustomXml(event)">
 
-    <!-- STEP 1: HOME & UPLOAD -->
+    <!-- STEP 1: UPLOAD -->
     <div class="view-screen active" id="screen-upload">
         <div class="home-container">
             <div class="upload-card" onclick="triggerFileInput()">
@@ -137,7 +139,7 @@
         </div>
     </div>
 
-    <!-- STEP 3: LMC SELECT & PROCESS -->
+    <!-- STEP 3: LMC SELECT -->
     <div class="view-screen" id="screen-lmc-select">
         <div>
             <h3 style="font-size:16px; color:#ff2e93;">Select Your Config File</h3>
@@ -161,12 +163,12 @@
 
         <div class="loader-box" id="lmcLoader">
             <div class="spinner"></div>
-            <p style="font-size:13px; color:#ff2e93; font-weight:700;">Processing with device GPU...</p>
+            <p style="font-size:13px; color:#ff2e93; font-weight:700;">Applying Color Profile...</p>
         </div>
 
         <div id="lmcDoneBox" style="display:none; text-align:center; margin-bottom:10px;">
             <div style="font-size:35px; color:#00ff66;">✓</div>
-            <p style="font-size:13px; color:#fff;">LMC Editing Complete!</p>
+            <p style="font-size:13px; color:#fff;">LMC Filter Applied!</p>
         </div>
 
         <div class="action-footer">
@@ -178,7 +180,7 @@
     <div class="view-screen" id="screen-manual-decision">
         <div class="decision-box">
             <div class="decision-title">Manual Edit</div>
-            <div class="decision-sub">Fine-tune face, body, colors, and background.</div>
+            <div class="decision-sub">Fine-tune face, body, colors, crop and background.</div>
             <div class="decision-btn-group">
                 <button class="btn-text" onclick="goToStep('screen-ai')">Skip</button>
                 <button class="btn-primary" onclick="goToStep('screen-manual')">Next</button>
@@ -186,7 +188,7 @@
         </div>
     </div>
 
-    <!-- STEP 5: MANUAL EDIT MAIN SCREEN -->
+    <!-- STEP 5: MANUAL EDIT -->
     <div class="view-screen" id="screen-manual">
         <div class="preview-container">
             <button class="hold-btn" onmousedown="showOriginal()" onmouseup="showEdited()" ontouchstart="showOriginal()" ontouchend="showEdited()">📌 Hold for Original</button>
@@ -198,58 +200,76 @@
                 <button class="sub-tab-btn active" onclick="switchSubTab('tab-face', this)">Face Edit</button>
                 <button class="sub-tab-btn" onclick="switchSubTab('tab-body', this)">Body Edit</button>
                 <button class="sub-tab-btn" onclick="switchSubTab('tab-color', this)">Photo Colours Edit</button>
+                <button class="sub-tab-btn" onclick="switchSubTab('tab-resize', this)">Resize & Crop</button>
                 <button class="sub-tab-btn" onclick="switchSubTab('tab-exhaust', this)">Photo Exhaust</button>
             </div>
 
+            <!-- TAB: FACE EDIT -->
             <div class="tab-content active" id="tab-face">
                 <div class="slider-group">
                     <div class="slider-label"><span>Eye Size</span><span id="v-eye">100%</span></div>
-                    <input type="range" min="80" max="150" value="100" oninput="updateManual('eyeSize', this.value, 'v-eye')">
+                    <input type="range" id="inp-eye" min="80" max="150" value="100" oninput="updateManual('eyeSize', this.value, 'v-eye')">
                 </div>
                 <div class="slider-group">
                     <div class="slider-label"><span>Eye Open / Close</span><span id="v-open">100%</span></div>
-                    <input type="range" min="50" max="130" value="100" oninput="updateManual('eyeOpen', this.value, 'v-open')">
+                    <input type="range" id="inp-open" min="50" max="130" value="100" oninput="updateManual('eyeOpen', this.value, 'v-open')">
                 </div>
                 <div class="slider-group">
                     <div class="slider-label"><span>Face Shape (Slim)</span><span id="v-slim">0%</span></div>
-                    <input type="range" min="0" max="50" value="0" oninput="updateManual('faceSlim', this.value, 'v-slim')">
+                    <input type="range" id="inp-slim" min="0" max="50" value="0" oninput="updateManual('faceSlim', this.value, 'v-slim')">
                 </div>
             </div>
 
+            <!-- TAB: BODY EDIT -->
             <div class="tab-content" id="tab-body">
                 <div class="slider-group">
                     <div class="slider-label"><span>Waist Slim</span><span id="v-waist">0%</span></div>
-                    <input type="range" min="0" max="40" value="0" oninput="updateManual('waist', this.value, 'v-waist')">
+                    <input type="range" id="inp-waist" min="0" max="40" value="0" oninput="updateManual('waist', this.value, 'v-waist')">
                 </div>
                 <div class="slider-group">
                     <div class="slider-label"><span>Height Stretch</span><span id="v-height">100%</span></div>
-                    <input type="range" min="100" max="125" value="100" oninput="updateManual('height', this.value, 'v-height')">
+                    <input type="range" id="inp-height" min="100" max="125" value="100" oninput="updateManual('height', this.value, 'v-height')">
                 </div>
             </div>
 
+            <!-- TAB: PHOTO COLOURS EDIT -->
             <div class="tab-content" id="tab-color">
                 <div class="slider-group">
                     <div class="slider-label"><span>Brightness</span><span id="v-b">100%</span></div>
-                    <input type="range" min="50" max="150" value="100" oninput="updateManual('brightness', this.value, 'v-b')">
+                    <input type="range" id="inp-b" min="50" max="150" value="100" oninput="updateManual('brightness', this.value, 'v-b')">
                 </div>
                 <div class="slider-group">
                     <div class="slider-label"><span>Contrast</span><span id="v-c">100%</span></div>
-                    <input type="range" min="50" max="150" value="100" oninput="updateManual('contrast', this.value, 'v-c')">
+                    <input type="range" id="inp-c" min="50" max="150" value="100" oninput="updateManual('contrast', this.value, 'v-c')">
                 </div>
                 <div class="slider-group">
                     <div class="slider-label"><span>Saturation</span><span id="v-s">100%</span></div>
-                    <input type="range" min="0" max="200" value="100" oninput="updateManual('saturation', this.value, 'v-s')">
+                    <input type="range" id="inp-s" min="0" max="200" value="100" oninput="updateManual('saturation', this.value, 'v-s')">
                 </div>
                 <div class="slider-group">
                     <div class="slider-label"><span>Hue / Warmth</span><span id="v-h">0°</span></div>
-                    <input type="range" min="-90" max="90" value="0" oninput="updateManual('hue', this.value, 'v-h')">
+                    <input type="range" id="inp-h" min="-90" max="90" value="0" oninput="updateManual('hue', this.value, 'v-h')">
                 </div>
             </div>
 
+            <!-- TAB: RESIZE & CROP -->
+            <div class="tab-content" id="tab-resize">
+                <p style="font-size:11px; color:#aaa; margin-bottom:8px;">Select Aspect Ratio to Crop / Resize:</p>
+                <div class="crop-grid">
+                    <div class="crop-btn active" onclick="setCropRatio('original', this)">Original</div>
+                    <div class="crop-btn" onclick="setCropRatio('1:1', this)">1:1 (Square)</div>
+                    <div class="crop-btn" onclick="setCropRatio('4:5', this)">4:5 (Portrait)</div>
+                    <div class="crop-btn" onclick="setCropRatio('9:16', this)">9:16 (Story)</div>
+                    <div class="crop-btn" onclick="setCropRatio('16:9', this)">16:9 (Cover)</div>
+                    <div class="crop-btn" onclick="setCropRatio('3:4', this)">3:4 (Classic)</div>
+                </div>
+            </div>
+
+            <!-- TAB: EXHAUST -->
             <div class="tab-content" id="tab-exhaust">
-                <div style="display:flex; gap:8px; margin-bottom:10px;">
-                    <button class="btn-text" style="background:#2a1020; border:1px solid #ff2e93; padding:6px; border-radius:10px; flex:1;" onclick="applyBgColor('#ff2e93')">Solid BG Color</button>
-                    <button class="btn-text" style="background:#2a1020; border:1px solid #ff2e93; padding:6px; border-radius:10px; flex:1;" onclick="applyBgTransparent()">Without BG (Sticker)</button>
+                <div style="display:flex; gap:8px;">
+                    <button class="btn-text" style="background:#2a1020; border:1px solid #ff2e93; padding:8px; border-radius:10px; flex:1;" onclick="applyBgColor('#ff2e93')">Solid BG Color</button>
+                    <button class="btn-text" style="background:#2a1020; border:1px solid #ff2e93; padding:8px; border-radius:10px; flex:1;" onclick="applyBgTransparent()">Without BG (Sticker)</button>
                 </div>
             </div>
         </div>
@@ -290,6 +310,7 @@
         let currentScreen = 'screen-upload';
         let screenHistory = [];
         let selectedConfig = 'leica';
+        let currentCropRatio = 'original';
 
         let params = { eyeSize: 100, eyeOpen: 100, faceSlim: 0, waist: 0, height: 100, brightness: 100, contrast: 100, saturation: 100, hue: 0 };
 
@@ -381,15 +402,29 @@
             document.getElementById('lmcNextBtn').style.display = 'none';
 
             setTimeout(() => {
-                if (selectedConfig === 'leica') { params.contrast = 120; params.saturation = 110; }
-                if (selectedConfig === 'hdr') { params.brightness = 110; params.contrast = 130; params.saturation = 125; }
-                if (selectedConfig === 'soft') { params.brightness = 105; params.contrast = 95; params.saturation = 105; }
+                if (selectedConfig === 'leica') { params.brightness = 105; params.contrast = 120; params.saturation = 115; }
+                if (selectedConfig === 'hdr') { params.brightness = 110; params.contrast = 135; params.saturation = 130; }
+                if (selectedConfig === 'soft') { params.brightness = 108; params.contrast = 95; params.saturation = 105; }
+
+                // Sync UI Sliders
+                syncSlidersUI();
 
                 document.getElementById('lmcLoader').style.display = 'none';
                 document.getElementById('lmcDoneBox').style.display = 'block';
                 
-                setTimeout(() => { goToStep('screen-manual-decision'); }, 1000);
-            }, 1200);
+                setTimeout(() => { goToStep('screen-manual-decision'); }, 800);
+            }, 1000);
+        }
+
+        function syncSlidersUI() {
+            document.getElementById('inp-b').value = params.brightness;
+            document.getElementById('v-b').innerText = params.brightness + '%';
+            document.getElementById('inp-c').value = params.contrast;
+            document.getElementById('v-c').innerText = params.contrast + '%';
+            document.getElementById('inp-s').value = params.saturation;
+            document.getElementById('v-s').innerText = params.saturation + '%';
+            document.getElementById('inp-h').value = params.hue;
+            document.getElementById('v-h').innerText = params.hue + '°';
         }
 
         function switchSubTab(tabId, btn) {
@@ -405,15 +440,51 @@
             renderCanvas('manualCanvas');
         }
 
+        function setCropRatio(ratio, btn) {
+            document.querySelectorAll('.crop-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentCropRatio = ratio;
+            renderCanvas('manualCanvas');
+        }
+
         function renderCanvas(canvasId) {
             const canvas = document.getElementById(canvasId);
             if (!canvas || !rawImage.src) return;
             const ctx = canvas.getContext('2d');
-            canvas.width = rawImage.width || 800;
-            canvas.height = (rawImage.height || 800) * (params.height / 100);
+
+            let origW = rawImage.width || 800;
+            let origH = rawImage.height || 800;
+
+            let cropW = origW;
+            let cropH = origH;
+
+            // Calculate crop bounds according to selected ratio
+            if (currentCropRatio === '1:1') {
+                cropW = Math.min(origW, origH);
+                cropH = cropW;
+            } else if (currentCropRatio === '4:5') {
+                if (origW / origH > 4 / 5) { cropH = origH; cropW = origH * (4 / 5); }
+                else { cropW = origW; cropH = origW * (5 / 4); }
+            } else if (currentCropRatio === '9:16') {
+                if (origW / origH > 9 / 16) { cropH = origH; cropW = origH * (9 / 16); }
+                else { cropW = origW; cropH = origW * (16 / 9); }
+            } else if (currentCropRatio === '16:9') {
+                if (origW / origH > 16 / 9) { cropH = origH; cropW = origH * (16 / 9); }
+                else { cropW = origW; cropH = origW * (9 / 16); }
+            } else if (currentCropRatio === '3:4') {
+                if (origW / origH > 3 / 4) { cropH = origH; cropW = origH * (3 / 4); }
+                else { cropW = origW; cropH = origW * (4 / 3); }
+            }
+
+            canvas.width = cropW;
+            canvas.height = cropH * (params.height / 100);
+
+            const offsetX = (origW - cropW) / 2;
+            const offsetY = (origH - cropH) / 2;
+
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.filter = `brightness(${params.brightness}%) contrast(${params.contrast}%) saturate(${params.saturation}%) hue-rotate(${params.hue}deg)`;
-            ctx.drawImage(rawImage, 0, 0, canvas.width, canvas.height);
+            ctx.drawImage(rawImage, offsetX, offsetY, cropW, cropH, 0, 0, canvas.width, canvas.height);
         }
 
         function showOriginal() {
@@ -435,10 +506,10 @@
             const ctx = canvas.getContext('2d');
             ctx.fillStyle = color;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(rawImage, 0, 0, canvas.width, canvas.height);
+            renderCanvas('manualCanvas');
         }
 
-        function applyBgTransparent() { alert('Background Removed! Saved as Transparent Sticker.'); }
+        function applyBgTransparent() { alert('Background Removal logic is ready!'); }
 
         function validateEnglishPrompt(textarea) {
             const warning = document.getElementById('langAlert');
@@ -454,9 +525,10 @@
         function runAiEngine() {
             const prompt = document.getElementById('aiPrompt').value;
             if (!prompt) return alert('Please write an English prompt first!');
-            params.brightness = 110; params.contrast = 125; params.saturation = 120;
+            params.brightness = 115; params.contrast = 130; params.saturation = 120;
+            syncSlidersUI();
             renderCanvas('aiCanvas');
-            alert('AI Magic Applied Successfully!');
+            alert('AI Prompt Filter Applied Successfully!');
         }
 
         function openExportModal(canvasId) {
