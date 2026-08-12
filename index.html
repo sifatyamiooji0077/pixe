@@ -3,315 +3,347 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Pixe</title>
+    <title>Pixe - On-Device Photo Editor</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; user-select: none; }
         body { background-color: #0d060a; color: #ffffff; height: 100vh; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; }
 
-        /* --- YAMIOOJI SPLASH SCREEN --- */
-        #splashScreen {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: #080306; display: flex; flex-direction: column;
-            justify-content: center; align-items: center; z-index: 99999;
-            transition: opacity 0.6s ease, visibility 0.6s ease;
-        }
-        .yamiooji-logo {
-            font-size: 32px; font-weight: 900; letter-spacing: 5px; color: #00FF66;
-            text-shadow: 0 0 18px rgba(0, 255, 102, 0.6); animation: zoomPulse 1.5s infinite alternate ease-in-out;
-        }
-        .presents-txt { font-size: 11px; color: #a0a0b0; margin-top: 6px; letter-spacing: 4px; }
-        @keyframes zoomPulse { 0% { transform: scale(0.95); opacity: 0.7; } 100% { transform: scale(1.05); opacity: 1; } }
-        .splash-fade { opacity: 0; visibility: hidden; }
-
-        /* --- HEADER --- */
-        .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; background: #140810; border-bottom: 1px solid #2a1020; }
+        /* TOP BAR */
+        .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: #140810; border-bottom: 1px solid #2a1020; z-index: 100; min-height: 55px; }
         .app-brand { font-size: 22px; font-weight: 800; color: #ff2e93; font-style: italic; letter-spacing: 1px; }
-        .nav-actions { display: flex; gap: 12px; align-items: center; }
-        .nav-btn { background: none; border: none; color: #ff2e93; font-size: 14px; font-weight: 600; cursor: pointer; }
-        .export-btn { background: #ff2e93; color: #fff; font-weight: 700; font-size: 13px; padding: 6px 16px; border-radius: 20px; border: none; cursor: pointer; }
+        .nav-left { display: flex; align-items: center; gap: 8px; }
+        .back-btn { background: #2a1020; color: #ff2e93; border: 1px solid #ff2e93; padding: 5px 12px; border-radius: 12px; font-size: 12px; font-weight: 700; cursor: pointer; display: none; }
+        .nav-right { display: flex; gap: 10px; align-items: center; }
+        .btn-text { background: none; border: none; color: #ff2e93; font-size: 13px; font-weight: 700; cursor: pointer; }
+        .btn-primary { background: #ff2e93; color: #fff; font-weight: 700; font-size: 13px; padding: 6px 16px; border-radius: 20px; border: none; cursor: pointer; }
 
-        /* --- VIEWS CONTAINER --- */
-        .view-step { display: none; flex: 1; flex-direction: column; justify-content: space-between; padding: 16px; overflow-y: auto; }
-        .view-step.active { display: flex; }
+        /* VIEWS / SCREENS */
+        .view-screen { display: none; flex: 1; flex-direction: column; justify-content: space-between; padding: 14px; overflow-y: auto; }
+        .view-screen.active { display: flex; }
 
         /* UPLOAD CARD */
-        .upload-card {
-            border: 2px dashed #ff2e93; border-radius: 20px; padding: 35px 20px;
-            text-align: center; background: rgba(255, 46, 147, 0.05); cursor: pointer; margin-bottom: 20px;
-        }
-        .upload-icon { font-size: 40px; color: #ff2e93; margin-bottom: 8px; }
-        .upload-title { font-size: 18px; font-weight: 700; color: #ffffff; font-style: italic; }
-        .upload-sub { font-size: 11px; color: #ff2e93; margin-top: 4px; opacity: 0.8; }
+        .upload-card { border: 2px dashed #ff2e93; border-radius: 20px; padding: 40px 20px; text-align: center; background: rgba(255, 46, 147, 0.05); cursor: pointer; margin: auto 0; }
+        .upload-icon { font-size: 45px; color: #ff2e93; margin-bottom: 10px; }
+        .upload-title { font-size: 18px; font-weight: 800; color: #ffffff; }
 
-        /* PRESETS */
-        .section-title { font-size: 14px; color: #ff2e93; font-weight: 600; margin-bottom: 12px; display: flex; justify-content: space-between; }
-        .presets-grid { display: flex; gap: 12px; }
-        .preset-card { flex: 1; background: #1a0a15; border: 1px solid #33142a; border-radius: 14px; padding: 16px 8px; text-align: center; cursor: pointer; }
-        .preset-card svg { width: 24px; height: 24px; stroke: #ff2e93; margin-bottom: 6px; }
-        .preset-card span { font-size: 12px; display: block; color: #eee; }
+        /* DECISION CARDS */
+        .decision-box { background: #1a0a15; border: 1px solid #ff2e93; border-radius: 18px; padding: 20px; text-align: center; margin: auto 0; }
+        .decision-title { font-size: 20px; font-weight: 800; color: #ff2e93; margin-bottom: 6px; }
+        .decision-sub { font-size: 12px; color: #aaa; margin-bottom: 20px; }
+        .decision-btn-group { display: flex; gap: 12px; justify-content: center; }
 
-        /* XML CONFIG LIST */
-        .config-list { display: flex; flex-direction: column; gap: 10px; }
-        .config-item { background: #1a0a15; border: 1px solid #33142a; padding: 14px; border-radius: 12px; display: flex; align-items: center; gap: 12px; cursor: pointer; }
-        .config-item span { font-size: 13px; color: #ddd; font-family: monospace; }
+        /* CANVA / PREVIEW AREA */
+        .preview-container { flex: 1; display: flex; justify-content: center; align-items: center; position: relative; background: #000; border-radius: 16px; overflow: hidden; min-height: 280px; margin-bottom: 10px; }
+        canvas { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .hold-btn { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); border: 1px solid #ff2e93; color: #fff; padding: 5px 12px; border-radius: 15px; font-size: 11px; z-index: 10; cursor: pointer; }
 
-        /* EDITOR CANVAS AREA */
-        .canvas-area { flex: 1; display: flex; justify-content: center; align-items: center; position: relative; background: #000; border-radius: 16px; overflow: hidden; margin-bottom: 12px; }
-        .preview-img { max-width: 100%; max-height: 100%; object-fit: contain; }
-        .hold-btn { position: absolute; top: 12px; background: rgba(0,0,0,0.6); border: 1px solid #ff2e93; color: #fff; padding: 5px 12px; border-radius: 15px; font-size: 11px; }
+        /* LMC CONFIG LIST */
+        .config-list { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
+        .config-item { background: #1a0a15; border: 1px solid #33142a; padding: 12px 16px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
+        .config-item.selected { border-color: #ff2e93; background: rgba(255, 46, 147, 0.1); }
+        .xml-btn { background: rgba(255, 46, 147, 0.15); border: 1px dashed #ff2e93; color: #fff; padding: 12px; border-radius: 12px; text-align: center; font-size: 13px; cursor: pointer; margin-bottom: 10px; font-weight: 700; }
 
-        /* CONTROLS & SLIDERS */
-        .editor-controls { background: #140810; border-radius: 20px; padding: 14px; }
-        .slider-row { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
-        .slider-label { display: flex; justify-content: space-between; font-size: 12px; color: #ccc; }
-        .slider-row input[type=range] { -webkit-appearance: none; width: 100%; height: 4px; background: #33142a; border-radius: 2px; }
-        .slider-row input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: #ff2e93; box-shadow: 0 0 8px #ff2e93; }
+        /* LOADER */
+        .loader-box { display: none; text-align: center; padding: 30px 10px; }
+        .spinner { width: 40px; height: 40px; border: 4px solid rgba(255,46,147,0.2); border-top-color: #ff2e93; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 15px; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        .editor-tabs { display: flex; justify-content: space-around; border-top: 1px solid #2a1020; padding-top: 10px; }
-        .tab-item { background: none; border: none; color: #888; font-size: 12px; font-weight: 600; cursor: pointer; }
-        .tab-item.active { color: #ff2e93; border-bottom: 2px solid #ff2e93; padding-bottom: 2px; }
+        /* MANUAL EDITOR CONTROLS & SUB TABS */
+        .editor-panel { background: #140810; border-radius: 18px; padding: 12px; }
+        .sub-tabs { display: flex; overflow-x: auto; gap: 8px; border-bottom: 1px solid #2a1020; padding-bottom: 8px; margin-bottom: 12px; }
+        .sub-tab-btn { background: #1a0a15; border: 1px solid #33142a; color: #888; padding: 6px 12px; border-radius: 15px; font-size: 11px; white-space: nowrap; font-weight: 700; cursor: pointer; }
+        .sub-tab-btn.active { color: #fff; background: #ff2e93; border-color: #ff2e93; }
 
-        /* AI PROMPT BOX */
-        .ai-box { background: #1a0a15; border: 1px solid #33142a; border-radius: 16px; padding: 14px; margin-top: 10px; }
-        .ai-box textarea { width: 100%; height: 80px; background: transparent; border: none; color: #fff; outline: none; font-size: 13px; resize: none; }
-        .btn-ai { background: #ff2e93; color: #fff; width: 100%; padding: 12px; border-radius: 25px; border: none; font-weight: 700; font-size: 14px; margin-top: 10px; cursor: pointer; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
 
-        /* EXPORT SUCCESS */
-        .export-success { text-align: center; margin: auto; }
-        .success-icon { width: 60px; height: 60px; background: #ff2e93; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; font-size: 30px; }
+        .slider-group { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+        .slider-label { display: flex; justify-content: space-between; font-size: 11px; color: #ccc; }
+        .slider-group input[type=range] { -webkit-appearance: none; width: 100%; height: 4px; background: #33142a; border-radius: 2px; }
+        .slider-group input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: #ff2e93; box-shadow: 0 0 6px #ff2e93; }
 
-        /* EXPORT MODAL SAFE PREVIEW */
-        .modal-bg { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 999; }
-        .modal-card { background: #1a0a15; border-radius: 18px; padding: 20px; width: 85%; max-width: 320px; text-align: center; border: 1px solid #ff2e93; }
-        .modal-card img { max-width: 100%; max-height: 200px; border-radius: 10px; margin: 10px 0; }
+        /* AI TEXTAREA */
+        .ai-input-box { background: #1a0a15; border: 1px solid #33142a; border-radius: 14px; padding: 10px; }
+        .ai-input-box textarea { width: 100%; height: 70px; background: transparent; border: none; color: #fff; outline: none; font-size: 12px; resize: none; }
+        .lang-warning { color: #ff2e93; font-size: 11px; margin-top: 5px; display: none; }
+
+        /* EXPORT MODAL */
+        .modal-overlay { position: fixed; top:0; left:0; width:100vw; height:100vh; background: rgba(0,0,0,0.85); display:none; justify-content:center; align-items:center; z-index:9999; }
+        .modal-body { background: #1a0a15; border: 1px solid #ff2e93; border-radius: 18px; padding: 20px; width: 85%; max-width: 320px; text-align: center; }
+        .modal-body img { max-width: 100%; max-height: 220px; border-radius: 10px; margin: 12px 0; }
     </style>
 </head>
 <body>
 
-    <!-- YAMIOOJI SPLASH SCREEN -->
-    <div id="splashScreen">
-        <h1 class="yamiooji-logo">YAMIOOJI</h1>
-        <p class="presents-txt">P R E S E N T S</p>
-    </div>
-
-    <!-- MAIN TOP BAR -->
     <div class="top-bar">
-        <span class="app-brand">Pixe</span>
-        <div class="nav-actions" id="navActions">
-            <button class="nav-btn" onclick="nextStep('step-lmc')">Skip</button>
-            <button class="export-btn" onclick="nextStep('step-editor')">Next</button>
+        <div class="nav-left">
+            <button class="back-btn" id="globalBackBtn" onclick="popHistory()">‹ Back</button>
+            <span class="app-brand">Pixe</span>
+        </div>
+        <div class="nav-right" id="topNavActions">
+            </div>
+    </div>
+
+    <input type="file" id="imageInput" accept="image/*" style="display:none;" onchange="handleImageUpload(event)">
+    <input type="file" id="xmlInput" accept=".xml" style="display:none;" onchange="handleCustomXml(event)">
+
+    <div class="view-screen active" id="screen-upload">
+        <div class="upload-card" onclick="document.getElementById('imageInput').click()">
+            <div class="upload-icon">☁</div>
+            <div class="upload-title">Upload Photo</div>
+            <p style="font-size:11px; color:#ff2e93; margin-top:6px;">Tap to select from gallery</p>
         </div>
     </div>
 
-    <input type="file" id="fileInput" accept="image/*" style="display:none;" onchange="loadUserPhoto(event)">
+    <div class="view-screen" id="screen-lmc-decision">
+        <div class="decision-box">
+            <div class="decision-title">LMC Auto Edit</div>
+            <div class="decision-sub">Do you want to apply LMC camera color profiles?</div>
+            <div class="decision-btn-group">
+                <button class="btn-text" onclick="goToStep('screen-manual-decision')">Skip</button>
+                <button class="btn-primary" onclick="goToStep('screen-lmc-select')">Next</button>
+            </div>
+        </div>
+    </div>
 
-    <!-- STEP 1: UPLOAD SCREEN -->
-    <div class="view-step active" id="step-upload">
+    <div class="view-screen" id="screen-lmc-select">
         <div>
-            <div class="upload-card" onclick="triggerPhotoUpload()">
-                <div class="upload-icon">☁</div>
-                <div class="upload-title">Tap to upload</div>
-                <div class="upload-sub">PNG, JPG, WEBP up to 50MB</div>
+            <h3 style="font-size:16px; color:#ff2e93;">Select Your Config File</h3>
+            <p style="font-size:11px; color:#aaa; margin-top:2px;">Add or choose an LMC config to auto edit.</p>
+            
+            <div style="margin-top:15px;">
+                <div class="xml-btn" onclick="document.getElementById('xmlInput').click()">+ Add Custom XML File</div>
+                <div class="config-list" id="configContainer">
+                    <div class="config-item selected" onclick="selectConfig(this, 'leica')">
+                        <span>📄 LMC_V10_Leica_Look.xml</span> <span>✓</span>
+                    </div>
+                    <div class="config-item" onclick="selectConfig(this, 'hdr')">
+                        <span>📄 LMC_V10_HDR_Ultra.xml</span> <span></span>
+                    </div>
+                    <div class="config-item" onclick="selectConfig(this, 'soft')">
+                        <span>📄 LMC_V10_Soft_Portrait.xml</span> <span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="loader-box" id="lmcLoader">
+            <div class="spinner"></div>
+            <p style="font-size:13px; color:#ff2e93; font-weight:700;">Processing with device GPU...</p>
+        </div>
+
+        <div id="lmcDoneBox" style="display:none; text-align:center; margin-bottom:10px;">
+            <div style="font-size:35px; color:#00ff66;">✓</div>
+            <p style="font-size:13px; color:#fff;">LMC Editing Complete!</p>
+        </div>
+
+        <button class="btn-primary" id="lmcNextBtn" style="width:100%; padding:12px;" onclick="processLMC()">Next</button>
+    </div>
+
+    <div class="view-screen" id="screen-manual-decision">
+        <div class="decision-box">
+            <div class="decision-title">Manual Edit</div>
+            <div class="decision-sub">Fine-tune face, body, colors, and background.</div>
+            <div class="decision-btn-group">
+                <button class="btn-text" onclick="goToStep('screen-ai')">Skip</button>
+                <button class="btn-primary" onclick="goToStep('screen-manual')">Next</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="view-screen" id="screen-manual">
+        <div class="preview-container">
+            <button class="hold-btn" onmousedown="showOriginal()" onmouseup="showEdited()" ontouchstart="showOriginal()" ontouchend="showEdited()">📌 Hold for Original</button>
+            <canvas id="manualCanvas"></canvas>
+        </div>
+
+        <div class="editor-panel">
+            <div class="sub-tabs">
+                <button class="sub-tab-btn active" onclick="switchSubTab('tab-face', this)">Face Edit</button>
+                <button class="sub-tab-btn" onclick="switchSubTab('tab-body', this)">Body Edit</button>
+                <button class="sub-tab-btn" onclick="switchSubTab('tab-color', this)">Photo Colours Edit</button>
+                <button class="sub-tab-btn" onclick="switchSubTab('tab-exhaust', this)">Photo Exhaust</button>
             </div>
 
-            <div class="section-title">
-                <span>Presets</span>
-                <span style="font-size:11px; opacity:0.7;">View all</span>
+            <div class="tab-content active" id="tab-face">
+                <div class="slider-group">
+                    <div class="slider-label"><span>Eye Size</span><span id="v-eye">100%</span></div>
+                    <input type="range" min="80" max="150" value="100" oninput="updateManual('eyeSize', this.value, 'v-eye')">
+                </div>
+                <div class="slider-group">
+                    <div class="slider-label"><span>Eye Open / Close</span><span id="v-open">100%</span></div>
+                    <input type="range" min="50" max="130" value="100" oninput="updateManual('eyeOpen', this.value, 'v-open')">
+                </div>
+                <div class="slider-group">
+                    <div class="slider-label"><span>Face Shape (Slim)</span><span id="v-slim">0%</span></div>
+                    <input type="range" min="0" max="50" value="0" oninput="updateManual('faceSlim', this.value, 'v-slim')">
+                </div>
             </div>
 
-            <div class="presets-grid">
-                <div class="preset-card" onclick="triggerPhotoUpload()">
-                    <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke-width="1.5"/></svg>
-                    <span>Leica</span>
+            <div class="tab-content" id="tab-body">
+                <div class="slider-group">
+                    <div class="slider-label"><span>Waist Slim</span><span id="v-waist">0%</span></div>
+                    <input type="range" min="0" max="40" value="0" oninput="updateManual('waist', this.value, 'v-waist')">
                 </div>
-                <div class="preset-card" onclick="triggerPhotoUpload()">
-                    <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke-width="1.5"/></svg>
-                    <span>Vibrant</span>
+                <div class="slider-group">
+                    <div class="slider-label"><span>Height Stretch</span><span id="v-height">100%</span></div>
+                    <input type="range" min="100" max="125" value="100" oninput="updateManual('height', this.value, 'v-height')">
                 </div>
-                <div class="preset-card" onclick="triggerPhotoUpload()">
-                    <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke-width="1.5"/></svg>
-                    <span>Natural</span>
+            </div>
+
+            <div class="tab-content" id="tab-color">
+                <div class="slider-group">
+                    <div class="slider-label"><span>Brightness</span><span id="v-b">100%</span></div>
+                    <input type="range" min="50" max="150" value="100" oninput="updateManual('brightness', this.value, 'v-b')">
+                </div>
+                <div class="slider-group">
+                    <div class="slider-label"><span>Contrast</span><span id="v-c">100%</span></div>
+                    <input type="range" min="50" max="150" value="100" oninput="updateManual('contrast', this.value, 'v-c')">
+                </div>
+                <div class="slider-group">
+                    <div class="slider-label"><span>Saturation</span><span id="v-s">100%</span></div>
+                    <input type="range" min="0" max="200" value="100" oninput="updateManual('saturation', this.value, 'v-s')">
+                </div>
+                <div class="slider-group">
+                    <div class="slider-label"><span>Hue / Warmth</span><span id="v-h">0°</span></div>
+                    <input type="range" min="-90" max="90" value="0" oninput="updateManual('hue', this.value, 'v-h')">
+                </div>
+                <div class="slider-group">
+                    <div class="slider-label"><span>Details & Focus</span><span id="v-d">0%</span></div>
+                    <input type="range" min="0" max="100" value="0" oninput="updateManual('details', this.value, 'v-d')">
+                </div>
+            </div>
+
+            <div class="tab-content" id="tab-exhaust">
+                <div style="display:flex; gap:8px; margin-bottom:10px;">
+                    <button class="btn-text" style="background:#2a1020; border:1px solid #ff2e93; padding:6px; border-radius:10px; flex:1;" onclick="applyBgColor('#ff2e93')">Solid BG Color</button>
+                    <button class="btn-text" style="background:#2a1020; border:1px solid #ff2e93; padding:6px; border-radius:10px; flex:1;" onclick="applyBgTransparent()">Without BG (Sticker)</button>
+                </div>
+                <div style="background:#1a0a15; padding:8px; border-radius:10px; border:1px solid #33142a; text-align:center;">
+                    <span style="font-size:11px; color:#aaa;">Super Remover (Touch canvas to erase objects)</span>
+                    <div class="slider-group" style="margin-top:6px;">
+                        <input type="range" min="5" max="50" value="20" id="eraserRadius">
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- STEP 2: LMC CONFIG SCREEN -->
-    <div class="view-step" id="step-lmc">
-        <div>
-            <div style="margin-bottom:15px;">
-                <h3 style="font-size:16px; color:#ff2e93; font-style:italic;">Auto Edit (LMC Config)</h3>
-                <p style="font-size:11px; color:#aaa; margin-top:4px;">Select an LMC xml config file to apply auto adjustments.</p>
+    <div class="view-screen" id="screen-ai">
+        <div class="preview-container">
+            <button class="hold-btn" onmousedown="showOriginal()" onmouseup="showEdited()" ontouchstart="showOriginal()" ontouchend="showEdited()">📌 Hold for Original</button>
+            <canvas id="aiCanvas"></canvas>
+        </div>
+
+        <div class="editor-panel">
+            <h4 style="font-size:14px; color:#ff2e93; margin-bottom:6px;">AI Precise Editor</h4>
+            <div class="ai-input-box">
+                <textarea id="aiPrompt" placeholder="e.g. Add cinematic neon lights, smooth skin tone..." oninput="validateEnglishPrompt(this)"></textarea>
             </div>
-            <div class="config-list">
-                <div class="config-item" onclick="applyPresetAndGo('leica')">
-                    📄 <span>LMC_V10_Leica_Look.xml</span>
-                </div>
-                <div class="config-item" onclick="applyPresetAndGo('hdr')">
-                    📄 <span>LMC_V10_HDR_Ultra.xml</span>
-                </div>
-                <div class="config-item" onclick="applyPresetAndGo('soft')">
-                    📄 <span>LMC_V10_Soft_Portrait.xml</span>
-                </div>
-            </div>
+            <div class="lang-warning" id="langAlert">⚠️ English language only! English prompt is required.</div>
+            <button class="btn-primary" style="width:100%; margin-top:10px; padding:10px;" onclick="runAiEngine()">✨ Apply AI Magic</button>
         </div>
     </div>
 
-    <!-- STEP 3: EDITOR SCREEN -->
-    <div class="view-step" id="step-editor">
-        <div class="canvas-area">
-            <button class="hold-btn" onmousedown="showOriginal()" onmouseup="hideOriginal()" ontouchstart="showOriginal()" ontouchend="hideOriginal()">📌 Hold for Original</button>
-            <img id="mainPreview" class="preview-img" src="" alt="Preview">
-        </div>
-
-        <div class="editor-controls">
-            <div class="slider-row">
-                <div class="slider-label"><span>Eye Size</span><span id="v1">50%</span></div>
-                <input type="range" min="0" max="100" value="50" oninput="updateFx('v1', this.value)">
-            </div>
-            <div class="slider-row">
-                <div class="slider-label"><span>Eye Open/Close</span><span id="v2">50%</span></div>
-                <input type="range" min="0" max="100" value="50" oninput="updateFx('v2', this.value)">
-            </div>
-            <div class="slider-row">
-                <div class="slider-label"><span>Face Shape (Slim)</span><span id="v3">50%</span></div>
-                <input type="range" min="0" max="100" value="50" oninput="updateFx('v3', this.value)">
-            </div>
-
-            <div class="editor-tabs">
-                <button class="tab-item active">Face Edit</button>
-                <button class="tab-item">Body Edit</button>
-                <button class="tab-item">Erase & Blur</button>
-            </div>
-        </div>
-
-        <div style="margin-top:10px;">
-            <div class="section-title">AI Precise Editor</div>
-            <div class="ai-box">
-                <textarea placeholder="e.g. Change background to a cyberpunk city night with neon lights..."></textarea>
-            </div>
-            <button class="btn-ai" onclick="nextStep('step-export')">✨ Generate with AI</button>
-        </div>
-    </div>
-
-    <!-- STEP 4: EXPORT COMPLETE SCREEN -->
-    <div class="view-step" id="step-export">
-        <div class="export-success">
-            <div class="success-icon">✓</div>
-            <h2 style="font-size:20px; font-style:italic; margin-bottom:20px;">Editing Complete!</h2>
-            <button class="btn-ai" onclick="exportPhotoSafe()" style="max-width:220px;">📥 Save Photo</button>
-        </div>
-    </div>
-
-    <!-- SAFE EXPORT PREVIEW MODAL -->
-    <div class="modal-bg" id="exportModal">
-        <div class="modal-card">
-            <h3 style="color:#ff2e93; font-size:16px;">Photo Ready!</h3>
-            <p style="font-size:11px; color:#aaa; margin-top:4px;">Tap button or long press image to save to gallery.</p>
-            <img id="exportResultImg" src="" alt="Result">
+    <div class="modal-overlay" id="exportModal">
+        <div class="modal-body">
+            <h3 style="color:#ff2e93; font-size:16px;">Export Photo</h3>
+            <p style="font-size:11px; color:#aaa;">Your photo is ready for download.</p>
+            <img id="exportImgPreview" src="" alt="Result">
             <div style="display:flex; gap:10px; margin-top:10px;">
-                <button class="nav-btn" style="flex:1;" onclick="closeModal()">Close</button>
-                <a id="downloadAnchor" download="pixe-edit.png" class="export-btn" style="flex:1; text-decoration:none; display:inline-block; line-height:26px;">Save PNG</a>
+                <button class="btn-text" style="flex:1;" onclick="closeModal()">Close</button>
+                <a id="downloadBtn" download="pixe-edited.png" class="btn-primary" style="flex:1; text-decoration:none; display:inline-block; line-height:28px;">Save PNG</a>
             </div>
         </div>
     </div>
 
     <script>
-        // Splash Screen
-        window.addEventListener('DOMContentLoaded', () => {
-            setTimeout(() => {
-                const splash = document.getElementById('splashScreen');
-                if (splash) splash.classList.add('splash-fade');
-            }, 2200);
-        });
+        // APP STATE & HISTORY
+        let rawImage = new Image();
+        let currentScreen = 'screen-upload';
+        let screenHistory = [];
+        let selectedConfig = 'leica';
 
-        let loadedImageBase64 = null;
+        let params = {
+            eyeSize: 100, eyeOpen: 100, faceSlim: 0,
+            waist: 0, height: 100,
+            brightness: 100, contrast: 100, saturation: 100, hue: 0, details: 0
+        };
 
-        function triggerPhotoUpload() {
-            document.getElementById('fileInput').click();
+        // NAVIGATION LOGIC
+        function goToStep(screenId) {
+            if (currentScreen !== screenId) {
+                screenHistory.push(currentScreen);
+            }
+            currentScreen = screenId;
+            renderScreen();
         }
 
-        function loadUserPhoto(e) {
+        function popHistory() {
+            if (screenHistory.length > 0) {
+                currentScreen = screenHistory.pop();
+                renderScreen();
+            }
+        }
+
+        function renderScreen() {
+            document.querySelectorAll('.view-screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(currentScreen).classList.add('active');
+
+            const backBtn = document.getElementById('globalBackBtn');
+            const navRight = document.getElementById('topNavActions');
+
+            // Show Back Button for step 2 onwards
+            backBtn.style.display = (currentScreen === 'screen-upload') ? 'none' : 'block';
+
+            // Top-right Nav Actions
+            if (currentScreen === 'screen-manual') {
+                navRight.innerHTML = `
+                    <button class="btn-text" onclick="goToStep('screen-ai')">Next</button>
+                    <button class="btn-primary" onclick="openExportModal('manualCanvas')">Export</button>
+                `;
+                renderCanvas('manualCanvas');
+            } else if (currentScreen === 'screen-ai') {
+                navRight.innerHTML = `<button class="btn-primary" onclick="openExportModal('aiCanvas')">Export</button>`;
+                renderCanvas('aiCanvas');
+            } else {
+                navRight.innerHTML = ``;
+            }
+        }
+
+        // IMAGE UPLOAD HANDLER
+        function handleImageUpload(e) {
             const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(evt) {
-                    loadedImageBase64 = evt.target.result;
-                    document.getElementById('mainPreview').src = loadedImageBase64;
-                    nextStep('step-lmc');
+                    rawImage.onload = () => {
+                        goToStep('screen-lmc-decision');
+                    };
+                    rawImage.src = evt.target.result;
                 };
                 reader.readAsDataURL(file);
             }
         }
 
-        function nextStep(stepId) {
-            document.querySelectorAll('.view-step').forEach(s => s.classList.remove('active'));
-            document.getElementById(stepId).classList.add('active');
-
-            const nav = document.getElementById('navActions');
-            if (stepId === 'step-upload') {
-                nav.innerHTML = `<button class="nav-btn" onclick="nextStep('step-lmc')">Skip</button><button class="export-btn" onclick="nextStep('step-editor')">Next</button>`;
-            } else if (stepId === 'step-editor') {
-                nav.innerHTML = `<button class="export-btn" onclick="nextStep('step-export')">Export</button>`;
-            } else if (stepId === 'step-export') {
-                nav.innerHTML = `<button class="nav-btn" onclick="nextStep('step-upload')">Restart</button>`;
-            }
+        // LMC FUNCTIONS
+        function selectConfig(el, type) {
+            document.querySelectorAll('.config-item').forEach(c => {
+                c.classList.remove('selected');
+                c.querySelector('span:last-child').innerText = '';
+            });
+            el.classList.add('selected');
+            el.querySelector('span:last-child').innerText = '✓';
+            selectedConfig = type;
         }
 
-        function applyPresetAndGo(type) {
-            const img = document.getElementById('mainPreview');
-            if (!img.src) img.src = loadedImageBase64 || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500";
-
-            if (type === 'leica') img.style.filter = "contrast(120%) saturate(110%)";
-            if (type === 'hdr') img.style.filter = "contrast(140%) brightness(105%)";
-            if (type === 'soft') img.style.filter = "brightness(110%) blur(0.3px)";
-
-            nextStep('step-editor');
-        }
-
-        function updateFx(id, val) {
-            document.getElementById(id).innerText = val + '%';
-            const img = document.getElementById('mainPreview');
-            const factor = val / 50;
-            img.style.filter = `brightness(${factor}) contrast(${factor})`;
-        }
-
-        function showOriginal() {
-            const img = document.getElementById('mainPreview');
-            img.dataset.currFilter = img.style.filter;
-            img.style.filter = 'none';
-        }
-
-        function hideOriginal() {
-            const img = document.getElementById('mainPreview');
-            if (img.dataset.currFilter) img.style.filter = img.dataset.currFilter;
-        }
-
-        // Webview Crash Proof Export
-        function exportPhotoSafe() {
-            const img = document.getElementById('mainPreview');
-            if (!img.src) return;
-
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            canvas.width = img.naturalWidth || 600;
-            canvas.height = img.naturalHeight || 600;
-
-            ctx.filter = getComputedStyle(img).filter;
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-            canvas.toBlob((blob) => {
-                const blobUrl = URL.createObjectURL(blob);
-                document.getElementById('exportResultImg').src = blobUrl;
-                document.getElementById('downloadAnchor').href = blobUrl;
-                document.getElementById('exportModal').style.display = 'flex';
-            }, 'image/png');
-        }
-
-        function closeModal() {
-            document.getElementById('exportModal').style.display = 'none';
-        }
-    </script>
-</body>
-                      </html>
-                                                                                                                                                                            
+        function handleCustomXml(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const container = document.getElementById('configContainer');
+                const div = document.createElement('div');
+                div.className = 'config-item selected';
+                div.onclick = function() { selectConfig(this, 'custom'); };
+                div.innerHTML = `<span>📄 ${file.name}</span><span>✓</span>`;
+                container.prepend(div);
+          
