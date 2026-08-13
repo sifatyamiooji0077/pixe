@@ -242,10 +242,11 @@
     <div class="modal-overlay" id="exportModal">
         <div class="modal-body">
             <h3 style="color:#ff2e93; font-size:16px;">Export LMC Enhanced Photo</h3>
+            <p style="font-size:11px; color:#aaa; margin-top:2px;">Rendering full resolution HD output...</p>
             <img id="exportImgPreview" src="" alt="Result">
             <div style="display:flex; gap:10px; margin-top:10px;">
                 <button class="btn-text" style="flex:1;" onclick="closeModal()">Close</button>
-                <a id="downloadBtn" download="lmc-enhanced.png" class="btn-primary" style="flex:1; text-decoration:none; display:inline-block; line-height:28px;">Save PNG</a>
+                <a id="downloadBtn" download="lmc-enhanced-hd.png" class="btn-primary" style="flex:1; text-decoration:none; display:inline-block; line-height:28px;">Save PNG</a>
             </div>
         </div>
     </div>
@@ -294,8 +295,8 @@
 
             const navRight = document.getElementById('topNavActions');
             if (currentScreen === 'screen-manual') {
-                navRight.innerHTML = `<button class="btn-primary" onclick="openExportModal('manualCanvas')">Export</button>`;
-                renderLMCProcessingCanvas('manualCanvas');
+                navRight.innerHTML = `<button class="btn-primary" onclick="openExportModal()">Export</button>`;
+                renderLMCProcessingCanvas('manualCanvas', false);
             } else {
                 navRight.innerHTML = ``;
             }
@@ -350,42 +351,38 @@
 
         /* REAL RENDERING DELAY & TICK MARK LOGIC */
         function startConfigProcessing(el, type) {
-            if (isProcessingConfig) return; // Prevent double taps during processing
+            if (isProcessingConfig) return;
             isProcessingConfig = true;
 
-            // Reset all checkmarks and next button
             document.querySelectorAll('.config-item').forEach(c => {
                 c.classList.remove('selected');
                 c.querySelector('.status-mark').innerText = '';
             });
             document.getElementById('lmcNextBtn').style.display = 'none';
 
-            // Highlight selected row without checkmark yet
             el.classList.add('selected');
             selectedConfig = type;
 
-            // Show Processing Loader
             const loader = document.getElementById('lmcLoader');
             loader.style.display = 'block';
 
-            // Simulate Processing Delay (2.5 Seconds for Rendering Processing)
             setTimeout(() => {
                 if (type === 'natural') {
-                    lmcParams = { hdr: 135, greenBoost: 145, sharpness: 130, brightness: 102, contrast: 110, saturation: 120 };
+                    // Optimized Natural Tone Profile matching LMC camera
+                    lmcParams = { hdr: 125, greenBoost: 130, sharpness: 120, brightness: 101, contrast: 106, saturation: 110 };
                 } else if (type === 'hdr') {
-                    lmcParams = { hdr: 155, greenBoost: 150, sharpness: 140, brightness: 100, contrast: 118, saturation: 125 };
+                    lmcParams = { hdr: 155, greenBoost: 145, sharpness: 135, brightness: 100, contrast: 115, saturation: 120 };
                 } else if (type === 'leica') {
-                    lmcParams = { hdr: 120, greenBoost: 115, sharpness: 125, brightness: 98, contrast: 125, saturation: 110 };
+                    lmcParams = { hdr: 120, greenBoost: 110, sharpness: 125, brightness: 98, contrast: 122, saturation: 105 };
                 }
 
                 syncUI();
                 loader.style.display = 'none';
 
-                // Render Completed: Now show checkmark and next button
                 el.querySelector('.status-mark').innerText = '✓';
                 document.getElementById('lmcNextBtn').style.display = 'block';
                 isProcessingConfig = false;
-            }, 2200);
+            }, 2000);
         }
 
         function syncUI() {
@@ -435,25 +432,36 @@
             if (!renderScheduled) {
                 renderScheduled = true;
                 requestAnimationFrame(() => {
-                    renderLMCProcessingCanvas('manualCanvas');
+                    renderLMCProcessingCanvas('manualCanvas', false);
                     renderScheduled = false;
                 });
             }
         }
 
-        function renderLMCProcessingCanvas(canvasId) {
-            const canvas = document.getElementById(canvasId);
+        /* 
+           CORE ENGINE: 
+           isFullRes = false -> Fast 800px preview for dragging smoothly.
+           isFullRes = true  -> 100% Original Resolution HD Output for Export.
+        */
+        function renderLMCProcessingCanvas(targetCanvas, isFullRes = false) {
+            let canvas = typeof targetCanvas === 'string' ? document.getElementById(targetCanvas) : targetCanvas;
             if (!canvas || !rawImage.src) return;
             const ctx = canvas.getContext('2d');
 
-            let MAX_PREVIEW_DIM = 800; 
-            let scale = Math.min(1, MAX_PREVIEW_DIM / Math.max(rawImage.width, rawImage.height));
+            let origW = rawImage.naturalWidth || rawImage.width || 1920;
+            let origH = rawImage.naturalHeight || rawImage.height || 1080;
 
-            let cropW = (rawImage.width || 800) * scale;
-            let cropH = (rawImage.height || 800) * scale;
-
-            canvas.width = cropW;
-            canvas.height = cropH;
+            if (isFullRes) {
+                // Keep original full HD/4K size
+                canvas.width = origW;
+                canvas.height = origH;
+            } else {
+                // Downscale preview for fast real-time sliders
+                let MAX_PREVIEW_DIM = 800; 
+                let scale = Math.min(1, MAX_PREVIEW_DIM / Math.max(origW, origH));
+                canvas.width = origW * scale;
+                canvas.height = origH * scale;
+            }
 
             ctx.filter = `brightness(${lmcParams.brightness}%) contrast(${lmcParams.contrast}%) saturate(${lmcParams.saturation}%)`;
             ctx.drawImage(rawImage, 0, 0, canvas.width, canvas.height);
@@ -464,24 +472,31 @@
             let hdrFactor = (lmcParams.hdr - 100) / 100;
             let greenFactor = (lmcParams.greenBoost - 100) / 100;
 
+            // Natural Tone Color Mapping Loop
             for (let i = 0; i < data.length; i += 4) {
                 let r = data[i], g = data[i + 1], b = data[i + 2];
 
-                if (g > r && g > b) {
-                    data[i + 1] = Math.min(255, g + (g - r) * greenFactor * 1.1);
+                // Selective Natural Green Tone Processing
+                if (g > r * 0.9 && g > b * 0.9) {
+                    let boost = (g - Math.max(r, b)) * greenFactor * 0.8;
+                    data[i + 1] = Math.min(255, g + boost);
+                    // Keep contrast balanced
+                    data[i] = Math.max(0, r - boost * 0.15);
                 }
 
+                // Shadow Lifting & Dynamic HDR Simulation
                 let avg = (r + g + b) / 3;
-                if (avg < 110) {
-                    let boost = (110 - avg) * hdrFactor * 0.4;
-                    data[i] = Math.min(255, r + boost);
-                    data[i + 1] = Math.min(255, g + boost);
-                    data[i + 2] = Math.min(255, b + boost);
+                if (avg < 120) {
+                    let boost = (120 - avg) * hdrFactor * 0.35;
+                    data[i] = Math.min(255, data[i] + boost);
+                    data[i + 1] = Math.min(255, data[i + 1] + boost);
+                    data[i + 2] = Math.min(255, data[i + 2] + boost);
                 }
             }
 
             ctx.putImageData(imgData, 0, 0);
 
+            // High Precision Unsharp Sharpening
             if (lmcParams.sharpness > 105) {
                 applyFastSharpening(ctx, canvas.width, canvas.height, (lmcParams.sharpness - 100) / 100);
             }
@@ -491,10 +506,10 @@
             let imgData = ctx.getImageData(0, 0, width, height);
             let pixels = imgData.data;
             let copy = new Uint8ClampedArray(pixels);
-            let mix = amount * 0.2;
+            let mix = amount * 0.25;
 
-            for (let y = 1; y < height - 1; y += 1) {
-                for (let x = 1; x < width - 1; x += 1) {
+            for (let y = 1; y < height - 1; y++) {
+                for (let x = 1; x < width - 1; x++) {
                     let idx = (y * width + x) * 4;
                     for (let c = 0; c < 3; c++) {
                         let diff = copy[idx + c] - copy[((y - 1) * width + x) * 4 + c];
@@ -518,9 +533,15 @@
             triggerSmoothRender();
         }
 
-        function openExportModal(canvasId) {
-            const canvas = document.getElementById(canvasId);
-            const dataUrl = canvas.toDataURL('image/png');
+        /* FULL RESOLUTION EXPORT HANDLER */
+        function openExportModal() {
+            // Create an Off-Screen Canvas for Full-Resolution HD Export
+            const fullCanvas = document.createElement('canvas');
+            
+            // Render at 100% full original resolution
+            renderLMCProcessingCanvas(fullCanvas, true);
+
+            const dataUrl = fullCanvas.toDataURL('image/png', 1.0);
             document.getElementById('exportImgPreview').src = dataUrl;
             document.getElementById('downloadBtn').href = dataUrl;
             document.getElementById('exportModal').style.display = 'flex';
